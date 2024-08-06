@@ -2,12 +2,19 @@
 const express = require("express");
 const fs = require('fs');
 const path = require('path');
+const readline = require('readline');
 const app = express();
 
 // Define the port number
 const PORT = 3000;
 
 app.use(express.json());
+
+// Mock data store
+let users = [
+  { id: 1, name: 'Alice', age: 25 },
+  { id: 2, name: 'Bob', age: 30 }
+];
 
 // Endpoint to read the content of the config file
 app.get('/read-config', (req, res) => {
@@ -16,6 +23,7 @@ app.get('/read-config', (req, res) => {
     if (err) {
       return res.status(500).json({ message: 'Error reading config file', error: err });
     }
+    console.log("current config-->", data)
     res.status(200).json(JSON.parse(data));
   });
 });
@@ -40,10 +48,64 @@ app.post('/update-config', (req, res) => {
       if (err) {
         return res.status(500).json({ message: 'Error writing to config file', error: err });
       }
+      console.log("updated config-->", config)
       res.status(200).json({ message: 'Config file updated successfully', config });
     });
   });
 });
+
+
+
+// Handle GET requests to retrieve all users
+app.get('/users', (req, res) => {
+
+  res.status(200).json(users);
+});
+
+
+// Retrieve all users
+// app.get('/users', (req, res) => {
+//   const db = openDb();
+//   db.all('SELECT * FROM users', [], (err, rows) => {
+//     if (err) {
+//       throw err;
+//     }
+//     res.status(200).json(rows);
+//   });
+//   db.close();
+// });
+
+// process.stdout.write(`Users data sent to client: ${JSON.stringify(users)}\n`);
+
+// route for streaming video
+// app.get('/video', (req, res) => {
+//   const filePath = path.join(__dirname, 'video.mp4');
+//   const stat = fs.statSync(filePath);
+//   const fileSize = stat.size;
+//   const range = req.headers.range;
+
+//   if (range) {
+//     const parts = range.replace(/bytes=/, "").split("-");
+//     const start = parseInt(parts[0], 10);
+//     const end = Math.min(start + 1024 * 1024, fileSize - 1); // 1MB chunk
+//     res.writeHead(206, {
+//       "Content-Range": `bytes ${start}-${end}/${fileSize}`,
+//       "Accept-Ranges": "bytes",
+//       "Content-Length": end - start + 1,
+//       "Content-Type": "video/mp4"
+//     });
+//     fs.createReadStream(filePath, { start, end }).pipe(res);
+//   } else {
+//     res.writeHead(200, {
+//       "Content-Length": fileSize,
+//       "Content-Type": "video/mp4"
+//     });
+//     fs.createReadStream(filePath).pipe(res);
+//   }
+// });
+
+
+
 
 // Define a route for the root URL
 app.get("/", (req, res) => {
