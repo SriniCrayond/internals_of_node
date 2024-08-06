@@ -1,9 +1,49 @@
 // Import the express module
 const express = require("express");
+const fs = require('fs');
+const path = require('path');
 const app = express();
 
 // Define the port number
 const PORT = 3000;
+
+app.use(express.json());
+
+// Endpoint to read the content of the config file
+app.get('/read-config', (req, res) => {
+  const filePath = path.join(__dirname, 'config.json');
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) {
+      return res.status(500).json({ message: 'Error reading config file', error: err });
+    }
+    res.status(200).json(JSON.parse(data));
+  });
+});
+
+// Endpoint to update specific parameters in the config file
+app.post('/update-config', (req, res) => {
+  const filePath = path.join(__dirname, 'config.json');
+  const updates = req.body;
+
+  // Read the current config
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) {
+      return res.status(500).json({ message: 'Error reading config file', error: err });
+    }
+
+    // Parse the current config and apply updates
+    let config = JSON.parse(data);
+    config = { ...config, ...updates };
+
+    // Write the updated config back to the file
+    fs.writeFile(filePath, JSON.stringify(config, null, 2), 'utf8', (err) => {
+      if (err) {
+        return res.status(500).json({ message: 'Error writing to config file', error: err });
+      }
+      res.status(200).json({ message: 'Config file updated successfully', config });
+    });
+  });
+});
 
 // Define a route for the root URL
 app.get("/", (req, res) => {
